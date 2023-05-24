@@ -1,4 +1,4 @@
-module go-snapnote-backend
+module github.com/stenstromen/go-snapnote-backend
 
 go 1.20
 
