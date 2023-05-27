@@ -18,15 +18,16 @@ func CreateFormData(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	err = service.InsertFormData(formData)
+	var noteID string
+	noteID, err = service.InsertFormData(formData)
 	if err != nil {
 		http.Error(w, "Failed to insert data", http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintln(w, "Data inserted successfully")
+	fmt.Println(noteID)
+	fmt.Fprintln(w, noteID)
 }
 
 func GetFormData(w http.ResponseWriter, r *http.Request) {

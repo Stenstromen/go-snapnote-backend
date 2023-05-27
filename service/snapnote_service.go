@@ -1,9 +1,12 @@
 package service
 
 import (
+	"bytes"
+	"compress/gzip"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math/rand"
 	"os"
 
@@ -38,8 +41,8 @@ func GetFormDataByNoteID(noteID string) (model.FormData, error) {
 
 	row := stmt.QueryRow(noteID)
 
-	var jsonData []byte
-	err = row.Scan(&jsonData)
+	var compressedData []byte
+	err = row.Scan(&compressedData)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return model.FormData{}, fmt.Errorf("no data found for noteid: %s", noteID)
@@ -47,8 +50,19 @@ func GetFormDataByNoteID(noteID string) (model.FormData, error) {
 		return model.FormData{}, err
 	}
 
+	gz, err := gzip.NewReader(bytes.NewReader(compressedData))
+	if err != nil {
+		return model.FormData{}, err
+	}
+	defer gz.Close()
+
+	decompressedData, err := io.ReadAll(gz)
+	if err != nil {
+		return model.FormData{}, err
+	}
+
 	var formData model.FormData
-	err = json.Unmarshal(jsonData, &formData)
+	err = json.Unmarshal(decompressedData, &formData)
 	if err != nil {
 		return model.FormData{}, err
 	}
@@ -56,37 +70,45 @@ func GetFormDataByNoteID(noteID string) (model.FormData, error) {
 	return formData, nil
 }
 
-func InsertFormData(formData model.FormData) error {
-	createTableQuery := `CREATE TABLE IF NOT EXISTS your_table (
-		id INT PRIMARY KEY AUTO_INCREMENT,
-		noteid VARCHAR(8),
-		json_data JSON
-	)`
+func InsertFormData(formData model.FormData) (string, error) {
+	createTableQuery := `CREATE TABLE IF NOT EXISTS snapnote (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        noteid VARCHAR(8),
+        json_data LONGBLOB
+    )`
 	_, err := db.Exec(createTableQuery)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	noteID := generateRandomNoteID()
 
-	jsonData, err := json.Marshal(formData)
+	var buf bytes.Buffer
+	gz, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	stmt, err := db.Prepare("INSERT INTO your_table (noteid, json_data) VALUES (?, ?)")
+	if err := json.NewEncoder(gz).Encode(formData); err != nil {
+		return "", err
+	}
+	if err := gz.Close(); err != nil {
+		return "", err
+	}
+
+	stmt, err := db.Prepare("INSERT INTO snapnote (noteid, json_data) VALUES (?, ?)")
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(noteID, jsonData)
+	_, err = stmt.Exec(noteID, buf.Bytes())
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	fmt.Println("Data inserted successfully", noteID)
-	return nil
+	return noteID, nil
 }
 
 func generateRandomNoteID() string {
