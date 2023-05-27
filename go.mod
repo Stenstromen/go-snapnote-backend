@@ -7,3 +7,8 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/rs/cors v1.9.0
 )
+
+replace github.com/stenstromen/go-snapnote-backend => /
+replace github.com/stenstromen/go-snapnote-backend/models => /models
+replace github.com/stenstromen/go-snapnote-backend/controller => /controller
+replace github.com/stenstromen/go-snapnote-backend/service => /service
