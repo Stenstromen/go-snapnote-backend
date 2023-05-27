@@ -1,4 +1,4 @@
-name: ${{ github.repository }} CI
+name: go-snapnote-backend CI
 
 on:
   push:
