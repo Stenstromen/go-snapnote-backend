@@ -28,5 +28,5 @@ docker run -d --rm \
 -e DB_PASSWORD="STRING" \
 -e DB_DATABASE="STRING" \
 -e AUTHORIZATION="STRING" \
-go-snapnote-backend:latest
+ghcr.io/stenstromen/go-snapnote-backend:latest
 ```
