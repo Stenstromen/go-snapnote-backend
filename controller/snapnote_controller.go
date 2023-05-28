@@ -26,15 +26,12 @@ func CreateFormData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Println(noteID)
 	fmt.Fprintln(w, noteID)
 }
 
 func GetFormData(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	noteID := vars["noteid"]
-
-	fmt.Println("noteid:", noteID)
 
 	formData, err := service.GetFormDataByNoteID(noteID)
 	if err != nil {

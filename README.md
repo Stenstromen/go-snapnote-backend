@@ -8,15 +8,10 @@ DB_USERNAME:        String
 DB_PASSWORD:        String
 DB_DATABASE:        String
 AUTHORIZATION:      String
-PAXSSWORD:          String
+ALLOWED_ORIGINS     String (Comma separated)
 ```
 
 ## Docker
-
-### Build
-```
-docker build -t go-snapnote-backend .
-```
 
 ### Run
 ```
@@ -28,5 +23,6 @@ docker run -d --rm \
 -e DB_PASSWORD="STRING" \
 -e DB_DATABASE="STRING" \
 -e AUTHORIZATION="STRING" \
+-e ALLOWED_ORIGINS="http://localhost:8080,http://localhost:5173"
 ghcr.io/stenstromen/go-snapnote-backend:latest
 ```

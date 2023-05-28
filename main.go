@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -18,8 +19,10 @@ func main() {
 	router.HandleFunc("/post", controller.CreateFormData).Methods("POST")
 	router.HandleFunc("/get/{noteid}", controller.GetFormData).Methods("GET")
 
+	allowedOrigins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
+
 	corsOptions := cors.Options{
-		AllowedOrigins: []string{"http://example.com", "http://localhost:5173"},
+		AllowedOrigins: allowedOrigins,
 		AllowedMethods: []string{"GET", "POST"},
 		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	}
