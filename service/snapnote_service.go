@@ -33,7 +33,7 @@ func init() {
 }
 
 func GetFormDataByNoteID(noteID string) (model.FormData, error) {
-	stmt, err := db.Prepare("SELECT json_data FROM your_table WHERE noteid = ?")
+	stmt, err := db.Prepare("SELECT json_data FROM snapnote WHERE noteid = ?")
 	if err != nil {
 		return model.FormData{}, err
 	}
