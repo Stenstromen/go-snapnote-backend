@@ -14,9 +14,6 @@ import (
 func main() {
 	router := mux.NewRouter()
 
-	// Add auth middleware after CORS middleware
-	router.Use(authMiddleware)
-
 	router.HandleFunc("/post", controller.CreateFormData).Methods("POST")
 	router.HandleFunc("/get/{noteid}", controller.GetFormData).Methods("GET")
 
@@ -28,6 +25,10 @@ func main() {
 		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	}
 
+	// Use the auth middleware
+	router.Use(authMiddleware)
+
+	// Wrap the router (with the auth middleware) in the CORS handler
 	corsHandler := cors.New(corsOptions).Handler(router)
 
 	log.Println("Server started on port 8080")
