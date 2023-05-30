@@ -14,6 +14,7 @@ import (
 func main() {
 	router := mux.NewRouter()
 
+	// Add auth middleware after CORS middleware
 	router.Use(authMiddleware)
 
 	router.HandleFunc("/post", controller.CreateFormData).Methods("POST")
@@ -25,7 +26,6 @@ func main() {
 		AllowedOrigins: allowedOrigins,
 		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders: []string{"Content-Type", "Authorization"},
-		OptionsAllowedOrigins: allowedOrigins,
 	}
 
 	corsHandler := cors.New(corsOptions).Handler(router)
