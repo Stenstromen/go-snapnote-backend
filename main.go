@@ -38,9 +38,6 @@ func main() {
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := strings.TrimSpace(r.Header.Get("Authorization"))
-		envToken := strings.TrimSpace(os.Getenv("AUTHORIZATION"))
-		log.Printf("Authorization header: '%s'", token)
-		log.Printf("Authorization Env Variable: '%s'", envToken)
 
 		if token != os.Getenv("AUTHORIZATION") {
 			http.Error(w, "Forbidden", http.StatusForbidden)

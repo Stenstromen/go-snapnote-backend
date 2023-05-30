@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
 	"os"
 
@@ -107,7 +108,7 @@ func InsertFormData(formData model.FormData) (string, error) {
 		return "", err
 	}
 
-	fmt.Println("Data inserted successfully", noteID)
+	log.Println("Data inserted successfully", noteID)
 	return noteID, nil
 }
 
