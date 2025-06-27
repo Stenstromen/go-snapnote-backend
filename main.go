@@ -6,16 +6,16 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/stenstromen/go-snapnote-backend/controller"
 )
 
 func main() {
-	router := mux.NewRouter()
+	mux := http.NewServeMux()
 
-	router.HandleFunc("/post", controller.CreateFormData).Methods("POST")
-	router.HandleFunc("/get/{noteid}", controller.GetFormData).Methods("GET")
+	// Register routes
+	mux.HandleFunc("POST /post", controller.CreateFormData)
+	mux.HandleFunc("GET /get/{noteid}", controller.GetFormData)
 
 	allowedOrigins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
 
@@ -26,10 +26,10 @@ func main() {
 	}
 
 	// Use the auth middleware
-	router.Use(authMiddleware)
+	handler := authMiddleware(mux)
 
-	// Wrap the router (with the auth middleware) in the CORS handler
-	corsHandler := cors.New(corsOptions).Handler(router)
+	// Wrap the handler in the CORS handler
+	corsHandler := cors.New(corsOptions).Handler(handler)
 
 	log.Println("Server started on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", corsHandler))

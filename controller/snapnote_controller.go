@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
-	"github.com/gorilla/mux"
 	"github.com/stenstromen/go-snapnote-backend/model"
 	"github.com/stenstromen/go-snapnote-backend/service"
 )
@@ -30,8 +30,13 @@ func CreateFormData(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetFormData(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	noteID := vars["noteid"]
+	// Extract noteid from URL path
+	path := strings.TrimPrefix(r.URL.Path, "/get/")
+	if path == r.URL.Path {
+		http.Error(w, "Invalid note ID", http.StatusBadRequest)
+		return
+	}
+	noteID := path
 
 	formData, err := service.GetFormDataByNoteID(noteID)
 	if err != nil {
