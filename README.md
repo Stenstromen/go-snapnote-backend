@@ -2,7 +2,7 @@
 
 Backend server for Snapnote
 
-```
+```bash
 DB_HOST:            String
 DB_USERNAME:        String
 DB_PASSWORD:        String
@@ -14,7 +14,8 @@ ALLOWED_ORIGINS     String (Comma separated)
 ## Docker
 
 ### Run
-```
+
+```bash
 docker run -d --rm \
 --name snapnote \
 -p 8080:8080 \
