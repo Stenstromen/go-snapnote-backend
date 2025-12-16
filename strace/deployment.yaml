@@ -1,0 +1,147 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  labels:
+    app: mariadb
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3306
+    targetPort: 3306
+    protocol: TCP
+    name: mysql
+  selector:
+    app: mariadb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  labels:
+    app: mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:11.3
+        ports:
+        - containerPort: 3306
+          name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "rootpassword"
+        - name: MYSQL_DATABASE
+          value: "snapnote"
+        - name: MYSQL_USER
+          value: "test"
+        - name: MYSQL_PASSWORD
+          value: "test"
+        volumeMounts:
+        - name: mariadb-data
+          mountPath: /var/lib/mysql
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: mariadb-data
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-snapnote-backend-strace
+  labels:
+    app: go-snapnote-backend-strace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-snapnote-backend-strace
+  template:
+    metadata:
+      labels:
+        app: go-snapnote-backend-strace
+    spec:
+      containers:
+      - name: strace-container
+        image: localhost/go-snapnote-backend-strace:latest
+        command:
+          - /usr/bin/strace
+          - -f
+          - -e
+          - trace=all
+          - -o
+          - /tmp/strace.log
+          - -s
+          - "200"
+          - -y
+          - -yy
+          - --
+          - /go-snapnote-backend
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: ALLOWED_ORIGINS
+          value: "http://localhost:3000"
+        - name: AUTHORIZATION
+          value: "Bearer test-token"
+        - name: DB_USERNAME
+          value: "test"
+        - name: DB_PASSWORD
+          value: "test"
+        - name: DB_HOST
+          value: "mysql"
+        - name: DB_DATABASE
+          value: "snapnote"
+        volumeMounts:
+        - name: strace-logs
+          mountPath: /tmp
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          successThreshold: 1
+          tcpSocket:
+            port: 8080
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 8080
+          timeoutSeconds: 1
+        securityContext:
+          capabilities:
+            add:
+            - SYS_PTRACE
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 65534
+          seccompProfile:
+            type: Localhost
+            localhostProfile: profiles/seccomp-profile.json
+      volumes:
+      - name: strace-logs
+        emptyDir: {}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+
